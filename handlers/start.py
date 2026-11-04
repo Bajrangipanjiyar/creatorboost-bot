@@ -14,6 +14,7 @@ from database.crud import update_user_language
 from services.i18n import t
 from bot.keyboards.inline import get_language_keyboard, get_main_menu_keyboard, get_back_button
 from ads.manager import AdManager
+from utils.helpers import safe_edit_message
 
 router = Router(name="start")
 
@@ -53,7 +54,8 @@ async def handle_back_to_menu(callback: CallbackQuery, state: FSMContext, user, 
     is_admin = user.id in settings.ADMIN_IDS
     welcome_text = t("welcome_msg", lang, name=callback.from_user.first_name, bonus=settings.WELCOME_BONUS_COINS)
 
-    await callback.message.edit_text(
+    await safe_edit_message(
+        message=callback.message,
         text=welcome_text,
         reply_markup=get_main_menu_keyboard(lang, is_admin=is_admin),
         parse_mode="HTML"
@@ -62,7 +64,8 @@ async def handle_back_to_menu(callback: CallbackQuery, state: FSMContext, user, 
 
 @router.callback_query(F.data == "menu_language")
 async def handle_language_menu(callback: CallbackQuery, lang: str):
-    await callback.message.edit_text(
+    await safe_edit_message(
+        message=callback.message,
         text=t("choose_lang", lang),
         reply_markup=get_language_keyboard(),
         parse_mode="HTML"
@@ -78,7 +81,8 @@ async def handle_set_language(callback: CallbackQuery, user, session: AsyncSessi
     confirmation = t("lang_updated", new_lang)
     welcome_text = t("welcome_msg", new_lang, name=callback.from_user.first_name, bonus=settings.WELCOME_BONUS_COINS)
 
-    await callback.message.edit_text(
+    await safe_edit_message(
+        message=callback.message,
         text=f"{confirmation}\n\n{welcome_text}",
         reply_markup=get_main_menu_keyboard(new_lang, is_admin=is_admin),
         parse_mode="HTML"
@@ -87,7 +91,8 @@ async def handle_set_language(callback: CallbackQuery, user, session: AsyncSessi
 
 @router.callback_query(F.data == "menu_help")
 async def handle_help_menu(callback: CallbackQuery, lang: str):
-    await callback.message.edit_text(
+    await safe_edit_message(
+        message=callback.message,
         text=t("help_text", lang),
         reply_markup=get_back_button(lang),
         parse_mode="HTML"
